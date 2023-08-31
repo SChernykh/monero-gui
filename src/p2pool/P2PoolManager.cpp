@@ -53,21 +53,21 @@ void P2PoolManager::download() {
         QString fileName;
         QString validHash;
         #ifdef Q_OS_WIN
-            url = "https://github.com/SChernykh/p2pool/releases/download/v3.5/p2pool-v3.5-windows-x64.zip";
-            fileName = m_p2poolPath + "/p2pool-v3.5-windows-x64.zip";
-            validHash = "7502dcc3e1d5db6ec1ea4556dba112edf4cf256e10b6eda58a1ac7c6850599e3";
+            url = "https://github.com/SChernykh/p2pool/releases/download/v3.4/p2pool-v3.4-windows-x64.zip";
+            fileName = m_p2poolPath + "/p2pool-v3.4-windows-x64.zip";
+            validHash = "b7105f183ae2bf5b5b2dd716d6de8f1fcd9f74dfc8abf53ec3123ae68ec42943";
         #elif defined(Q_OS_LINUX)
-            url = "https://github.com/SChernykh/p2pool/releases/download/v3.5/p2pool-v3.5-linux-x64.tar.gz";
-            fileName = m_p2poolPath + "/p2pool-v3.5-linux-x64.tar.gz";
-            validHash = "5ee451aa1bf1ed71e6c3f307c048ecd77915daac348a0ecafd30636fcc763d7d";
+            url = "https://github.com/SChernykh/p2pool/releases/download/v3.4/p2pool-v3.4-linux-x64.tar.gz";
+            fileName = m_p2poolPath + "/p2pool-v3.4-linux-x64.tar.gz";
+            validHash = "7e50ee7fbb0644fccf96949dff035c1128529844e635290a8610e37e4902f77f";
         #elif defined(Q_OS_MACOS_AARCH64)
-            url = "https://github.com/SChernykh/p2pool/releases/download/v3.5/p2pool-v3.5-macos-aarch64.tar.gz";
-            fileName = m_p2poolPath + "/p2pool-v3.5-macos-aarch64.tar.gz";
-            validHash = "840feabb9d90d496eadd368ff2cf20bb8fb3b8b26caccda6ae442d50769250d2";
+            url = "https://github.com/SChernykh/p2pool/releases/download/v3.4/p2pool-v3.4-macos-aarch64.tar.gz";
+            fileName = m_p2poolPath + "/p2pool-v3.4-macos-aarch64.tar.gz";
+            validHash = "6146ba67c7e574bcd38da19ac5f07ebb6f4b7a8e9d3c5a67189952e69a344a97";
         #elif defined(Q_OS_MACOS)
-            url = "https://github.com/SChernykh/p2pool/releases/download/v3.5/p2pool-v3.5-macos-x64.tar.gz";
-            fileName = m_p2poolPath + "/p2pool-v3.5-macos-x64.tar.gz";
-            validHash = "94e6cf7c2a4023204e3c127213fab0ca1eeeba9b9431e224efb49f945b697c8c";
+            url = "https://github.com/SChernykh/p2pool/releases/download/v3.4/p2pool-v3.4-macos-x64.tar.gz";
+            fileName = m_p2poolPath + "/p2pool-v3.4-macos-x64.tar.gz";
+            validHash = "30a3543b0410e8cce0be35bebf101bf1e03437b7cbfd06c92ff53dc8eb277ad7";
         #endif
         QFile file(fileName);
         epee::net_utils::http::http_simple_client http_client;
@@ -76,10 +76,7 @@ void P2PoolManager::download() {
         std::chrono::milliseconds timeout = std::chrono::seconds(10);
         http_client.set_server(url.host().toStdString(), "443", {});
         bool success = http_client.invoke_get(url.path().toStdString(), timeout, {}, std::addressof(response), {{"User-Agent", userAgent}});
-        if (success && response->m_response_code == 404) {
-            emit p2poolDownloadFailure(BinaryNotAvailable);
-            return;
-        } else if (success && response->m_response_code == 302) {
+        if (response->m_response_code == 302) {
             epee::net_utils::http::fields_list fields = response->m_header_info.m_etc_fields;
             for (std::pair<std::string, std::string> i : fields) {
                 if (i.first == "Location") {
@@ -93,7 +90,7 @@ void P2PoolManager::download() {
             }
         }
         if (!success) {
-            emit p2poolDownloadFailure(ConnectionIssue);
+            emit p2poolDownloadFailure();
         }
         else {
             std::string stringData = response->m_body;
@@ -101,7 +98,7 @@ void P2PoolManager::download() {
             QByteArray hashData = QCryptographicHash::hash(data, QCryptographicHash::Sha256);
             QString hash = hashData.toHex();
             if (hash != validHash) {
-                emit p2poolDownloadFailure(HashVerificationFailed);
+                emit p2poolDownloadFailure();
             }
             else {
                 file.open(QIODevice::WriteOnly);
@@ -113,7 +110,7 @@ void P2PoolManager::download() {
                     emit p2poolDownloadSuccess();
                 }
                 else {
-                    emit p2poolDownloadFailure(InstallationFailed);
+                    emit p2poolDownloadFailure();
                 }
             }
         }
