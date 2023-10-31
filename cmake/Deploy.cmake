@@ -17,7 +17,33 @@ if(APPLE OR (WIN32 AND NOT STATIC))
             add_custom_command(TARGET deploy
                                POST_BUILD
                                COMMAND ${CMAKE_COMMAND} -E copy ${_qt_svg_dylib} $<TARGET_FILE_DIR:monero-wallet-gui>/../PlugIns/imageformats/
-                               COMMENT "Copying libqsvg.dylib"
+                               COMMAND ${CMAKE_INSTALL_NAME_TOOL} -change "${CMAKE_PREFIX_PATH}/lib/QtGui.framework/Versions/5/QtGui" "@executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui" $<TARGET_FILE_DIR:monero-wallet-gui>/../PlugIns/imageformats/libqsvg.dylib
+                               COMMAND ${CMAKE_INSTALL_NAME_TOOL} -change "${CMAKE_PREFIX_PATH}/lib/QtWidgets.framework/Versions/5/QtWidgets" "@executable_path/../Frameworks/QtWidgets.framework/Versions/5/QtWidgets" $<TARGET_FILE_DIR:monero-wallet-gui>/../PlugIns/imageformats/libqsvg.dylib
+                               COMMAND ${CMAKE_INSTALL_NAME_TOOL} -change "${CMAKE_PREFIX_PATH}/lib/QtSvg.framework/Versions/5/QtSvg" "@executable_path/../Frameworks/QtSvg.framework/Versions/5/QtSvg" $<TARGET_FILE_DIR:monero-wallet-gui>/../PlugIns/imageformats/libqsvg.dylib
+                               COMMAND ${CMAKE_INSTALL_NAME_TOOL} -change "${CMAKE_PREFIX_PATH}/lib/QtCore.framework/Versions/5/QtCore" "@executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore" $<TARGET_FILE_DIR:monero-wallet-gui>/../PlugIns/imageformats/libqsvg.dylib
+                               COMMENT "Copying libqsvg.dylib, running install_name_tool"
+
+            )
+        endif()
+
+        # libbost_filesyste-mt.dylib has a dependency on libboost_atomic-mt.dylib, maydeployqt does not copy it by itself
+        find_package(Boost COMPONENTS atomic)
+        get_target_property(BOOST_ATOMIC_LIB_PATH Boost::atomic LOCATION)
+        if(EXISTS ${BOOST_ATOMIC_LIB_PATH})
+            add_custom_command(TARGET deploy
+                               POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy "${BOOST_ATOMIC_LIB_PATH}" "$<TARGET_FILE_DIR:monero-wallet-gui>/../Frameworks/"
+                               COMMENT "Copying libboost_atomic-mt.dylib"
+            )
+        endif()
+
+        # Apple Silicon requires all binaries to be codesigned
+        find_program(CODESIGN_EXECUTABLE NAMES codesign)
+        if(CODESIGN_EXECUTABLE)
+            add_custom_command(TARGET deploy
+                            POST_BUILD
+                            COMMAND "${CODESIGN_EXECUTABLE}" --force --deep --sign - "$<TARGET_FILE_DIR:monero-wallet-gui>/../.."
+                            COMMENT "Running codesign..."
             )
         endif()
 
@@ -73,19 +99,19 @@ if(APPLE OR (WIN32 AND NOT STATIC))
         )
         if(CMAKE_BUILD_TYPE STREQUAL "Debug")
             list(APPEND WIN_DEPLOY_DLLS
-                libicudtd72.dll
-                libicuind72.dll
-                libicuiod72.dll
-                libicutud72.dll
-                libicuucd72.dll
+                libicudtd73.dll
+                libicuind73.dll
+                libicuiod73.dll
+                libicutud73.dll
+                libicuucd73.dll
             )
         else() # assume release
             list(APPEND WIN_DEPLOY_DLLS
-                libicudt72.dll
-                libicuin72.dll
-                libicuio72.dll
-                libicutu72.dll
-                libicuuc72.dll
+                libicudt73.dll
+                libicuin73.dll
+                libicuio73.dll
+                libicutu73.dll
+                libicuuc73.dll
             )
         endif()
         list(TRANSFORM WIN_DEPLOY_DLLS PREPEND "$ENV{MSYSTEM_PREFIX}/bin/")
