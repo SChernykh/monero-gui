@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2019, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 //
 // All rights reserved.
 //
@@ -586,6 +586,9 @@ ApplicationWindow {
     }
 
     function onWalletUpdate() {
+        if (!currentWallet)
+            return;
+
         console.log(">>> wallet updated")
         updateBalance();
         // Update history if new block found since last update

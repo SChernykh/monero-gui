@@ -1,6 +1,6 @@
 # Monero GUI
 
-Copyright (c) 2014-2022, The Monero Project
+Copyright (c) 2014-2024, The Monero Project
 
 ## Table of Contents
   * [Development resources](#development-resources)
@@ -87,7 +87,7 @@ Status of the translations:
 
 Packages are available for
 * Arch Linux: [monero-gui](https://archlinux.org/packages/extra/x86_64/monero-gui/)
-* Void Linux: `xbps-install -S monero-gui`
+* NixOS: `nix-shell -p monero-gui`
 * Flatpak: [Monero GUI](https://flathub.org/apps/details/org.getmonero.Monero)
 * GuixSD: `guix package -i monero-gui`
 * macOS (homebrew): `brew install --cask monero-wallet`
@@ -107,7 +107,7 @@ Packaging for your favorite distribution would be a welcome contribution!
    ```
    git clone --branch master --recursive https://github.com/monero-project/monero-gui.git
    ```
-   \* `master` - replace with the desired version tag (e.g. `v0.18.3.1`) to build the release binaries.
+   \* `master` - replace with the desired version tag (e.g. `v0.18.3.3`) to build the release binaries.
 3. Prepare build environment
    ```
    cd monero-gui
@@ -130,7 +130,7 @@ Packaging for your favorite distribution would be a welcome contribution!
    ```
    git clone --branch master --recursive https://github.com/monero-project/monero-gui.git
    ```
-   \* `master` - replace with the desired version tag (e.g. `v0.18.3.1`) to build the release binaries.
+   \* `master` - replace with the desired version tag (e.g. `v0.18.3.3`) to build the release binaries.
 3. Prepare build environment
    ```
    cd monero-gui
